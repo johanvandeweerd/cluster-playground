@@ -97,6 +97,19 @@ argo-cd:
         hs.message = ""
         return hs
 
+      # Only mark the AWS PodIdentityAssociation resource as Healthy if the `status.associationID` field is populated.
+      # This is to prevent pods to start before the association is created.
+      resource.customizations.health.eks.services.k8s.aws_PodIdentityAssociation: |
+        hs = {}
+        hs.status = "Progressing"
+        hs.message = ""
+        if obj.status ~= nil then
+          if obj.status.associationID ~= nil then
+            hs.status = "Healthy"
+          end
+        end
+        return hs
+
     # Argo CD configuration parameters
     ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cmd-params-cm.yaml
     params:
