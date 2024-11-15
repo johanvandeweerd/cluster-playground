@@ -18,42 +18,32 @@ resource "kubectl_manifest" "application" {
 
 # IAM
 module "iam_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source = "terraform-aws-modules/eks-pod-identity/aws"
 
-  role_name        = "${var.project_name}-open-telemetry"
-  role_description = "TF: IAM role used by Open Telemetry for IRSA."
+  name            = "${var.project_name}-open-telemetry"
+  description     = "TF: IAM role used by Open Telemetry for IRSA."
+  use_name_prefix = "false"
 
-  oidc_providers = {
-    (var.project_name) = {
-      provider                   = var.kubernetes_oidc_provider
-      provider_arn               = var.kubernetes_oidc_provider_arn
-      namespace_service_accounts = ["open-telemetry:open-telemetry"]
+  attach_custom_policy = true
+  policy_statements = [
+    {
+      effect = "Allow"
+      actions = [
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:FilterLogEvents",
+        "logs:GetLogEvents",
+        "logs:GetLogGroupFields",
+        "logs:GetLogRecord",
+      ]
+      resources = ["*"]
     }
-  }
-
-  role_policy_arns = {
-    "cloudwatch" = aws_iam_policy.cloudwatch.arn
-  }
+  ]
 }
 
-resource "aws_iam_policy" "cloudwatch" {
-  name        = "${var.project_name}-open-telemetry-cloudwatch"
-  description = "TF: IAM policy to allow read Cloudwatch logs"
-
-  policy = data.aws_iam_policy_document.cloudwatch.json
-}
-
-data "aws_iam_policy_document" "cloudwatch" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:DescribeLogGroups",
-      "logs:DescribeLogStreams",
-      "logs:FilterLogEvents",
-      "logs:GetLogEvents",
-      "logs:GetLogGroupFields",
-      "logs:GetLogRecord",
-    ]
-    resources = ["*"]
-  }
+resource "aws_eks_pod_identity_association" "this" {
+  cluster_name    = var.project_name
+  namespace       = "open-telemetry"
+  service_account = "open-telemetry-collector"
+  role_arn        = module.iam_role.iam_role_arn
 }

@@ -18,16 +18,19 @@ resource "kubectl_manifest" "application" {
 
 # IAM
 module "iam_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source = "terraform-aws-modules/eks-pod-identity/aws"
 
-  role_name        = "${var.project_name}-external-secrets"
-  role_description = "TF: IAM role used by External Secrets for IRSA."
+  name            = "${var.project_name}-external-secrets"
+  description     = "TF: IAM role used by External Secrets for IRSA."
+  use_name_prefix = "false"
 
-  oidc_providers = {
-    (var.project_name) = {
-      provider                   = var.kubernetes_oidc_provider
-      provider_arn               = var.kubernetes_oidc_provider_arn
-      namespace_service_accounts = ["external-secrets:external-secrets"]
-    }
-  }
+  attach_external_secrets_policy     = true
+  external_secrets_create_permission = true
+}
+
+resource "aws_eks_pod_identity_association" "this" {
+  cluster_name    = var.project_name
+  namespace       = "external-secrets"
+  service_account = "external-secrets"
+  role_arn        = module.iam_role.iam_role_arn
 }

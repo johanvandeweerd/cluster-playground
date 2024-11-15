@@ -17,18 +17,18 @@ resource "kubectl_manifest" "application" {
 
 # IAM
 module "iam_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source = "terraform-aws-modules/eks-pod-identity/aws"
 
-  role_name        = "${var.project_name}-ack-eks"
-  role_description = "TF: IAM role used by AWS Controller for Kubernetes for EKS."
+  name            = "${var.project_name}-ack-eks"
+  description     = "TF: IAM role used by AWS Controller for Kubernetes for EKS."
+  use_name_prefix = "false"
+}
 
-  oidc_providers = {
-    (var.project_name) = {
-      provider                   = var.kubernetes_oidc_provider
-      provider_arn               = var.kubernetes_oidc_provider_arn
-      namespace_service_accounts = ["aws-controller-kubernetes:ack-eks-controller"]
-    }
-  }
+resource "aws_eks_pod_identity_association" "this" {
+  cluster_name    = var.project_name
+  namespace       = "aws-controller-kubernetes"
+  service_account = "ack-eks-controller"
+  role_arn        = module.iam_role.iam_role_arn
 }
 
 resource "aws_iam_role_policy" "pod_identity" {
@@ -36,7 +36,6 @@ resource "aws_iam_role_policy" "pod_identity" {
   name   = "PodIdentity"
   policy = data.aws_iam_policy_document.pod_identity.json
 }
-
 
 data "aws_iam_policy_document" "pod_identity" {
   statement {

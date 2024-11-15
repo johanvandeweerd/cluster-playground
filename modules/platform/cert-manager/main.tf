@@ -18,53 +18,19 @@ resource "kubectl_manifest" "application" {
 
 # IAM
 module "iam_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source = "terraform-aws-modules/eks-pod-identity/aws"
 
-  role_name        = "${var.project_name}-cert-manager"
-  role_description = "TF: IAM role used by Certificate Manager for IRSA."
+  name            = "${var.project_name}-cert-manager"
+  description     = "TF: IAM role used by Certificate Manager for IRSA."
+  use_name_prefix = "false"
 
-  oidc_providers = {
-    (var.project_name) = {
-      provider                   = var.kubernetes_oidc_provider
-      provider_arn               = var.kubernetes_oidc_provider_arn
-      namespace_service_accounts = ["cert-manager:cert-manager"]
-    }
-  }
-
-  role_policy_arns = {
-    "route53" = aws_iam_policy.route53.arn
-  }
+  attach_cert_manager_policy    = true
+  cert_manager_hosted_zone_arns = [data.aws_route53_zone.this.arn]
 }
 
-resource "aws_iam_policy" "route53" {
-  name        = "${var.project_name}-cert-mananger-route53"
-  description = "TF: IAM policy to allow cert-manager to update Route53"
-
-  policy = data.aws_iam_policy_document.route53.json
+resource "aws_eks_pod_identity_association" "this" {
+  cluster_name    = var.project_name
+  namespace       = "cert-manager"
+  service_account = "cert-manager"
+  role_arn        = module.iam_role.iam_role_arn
 }
-
-data "aws_iam_policy_document" "route53" {
-  statement {
-    effect    = "Allow"
-    resources = ["arn:aws:route53:::change/*"]
-    actions = [
-      "route53:GetChange"
-    ]
-  }
-  statement {
-    effect    = "Allow"
-    resources = ["arn:aws:route53:::hostedzone/*"]
-    actions = [
-      "route53:ListResourceRecordSets",
-      "route53:ChangeResourceRecordSets"
-    ]
-  }
-  statement {
-    effect    = "Allow"
-    resources = ["*"]
-    actions = [
-      "route53:ListHostedZonesByName"
-    ]
-  }
-}
-

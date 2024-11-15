@@ -20,6 +20,8 @@ module "cert_manager" {
 
   kubernetes_oidc_provider     = var.kubernetes_oidc_provider
   kubernetes_oidc_provider_arn = var.kubernetes_oidc_provider_arn
+
+  hosted_zone = var.hosted_zone
 }
 
 module "external_secrets" {
