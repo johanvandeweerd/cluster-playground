@@ -6,7 +6,7 @@ resource "kubectl_manifest" "application_aws_load_balancer_controller" {
     gitUrl    = var.git_url
     revision  = var.git_revision
     helmParameters = merge({ for key, value in data.aws_default_tags.this.tags : "tags.${key}" => value }, {
-      "aws-load-balancer-controller.clusterName"                                                   = var.cluster_name
+      "aws-load-balancer-controller.clusterName"                                                   = var.project_name
       "aws-load-balancer-controller.serviceAccount.annotations.eks\\\\.amazonaws\\\\.com/role-arn" = module.iam_role_aws_load_balancer_controller.iam_role_arn
       "aws-load-balancer-controller.vpcId"                                                         = data.aws_vpc.this.id
       "aws-load-balancer-controller.backendSecurityGroup"                                          = data.aws_security_group.this.id
@@ -31,13 +31,13 @@ resource "kubectl_manifest" "application_traefik" {
 module "iam_role_aws_load_balancer_controller" {
   source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name        = "${var.cluster_name}-aws-load-balancer-controller"
+  role_name        = "${var.project_name}-aws-load-balancer-controller"
   role_description = "TF: IAM role used by AWS Load Balancer controller for IRSA."
 
   oidc_providers = {
-    (var.cluster_name) = {
-      provider                   = var.cluster_oidc_provider
-      provider_arn               = var.cluster_oidc_provider_arn
+    (var.project_name) = {
+      provider                   = var.kubernetes_oidc_provider
+      provider_arn               = var.kubernetes_oidc_provider_arn
       namespace_service_accounts = ["aws-load-balancer-controller:aws-load-balancer-controller"]
     }
   }
@@ -48,7 +48,7 @@ module "iam_role_aws_load_balancer_controller" {
 }
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
-  name        = "${var.cluster_name}-aws-load-balancer-controller"
+  name        = "${var.project_name}-aws-load-balancer-controller"
   description = "TF: IAM policy with the necessary permissions for AWS Load Balancer controller."
 
   policy = data.aws_iam_policy_document.aws_load_balancer_controller.json
@@ -330,16 +330,16 @@ module "acm" {
 module "nlb" {
   source = "terraform-aws-modules/alb/aws"
 
-  name    = var.cluster_name
+  name    = var.project_name
   vpc_id  = data.aws_vpc.this.id
   subnets = data.aws_subnets.public.ids
 
   load_balancer_type         = "network"
   enable_deletion_protection = false
 
-  security_group_name            = "${var.cluster_name}-nlb"
+  security_group_name            = "${var.project_name}-nlb"
   security_group_use_name_prefix = false
-  security_group_description     = "TF: Security group used by the NLB for the ${var.cluster_name} cluster."
+  security_group_description     = "TF: Security group used by the NLB for the ${var.project_name} cluster."
   security_group_ingress_rules = {
     https = {
       from_port   = 443
@@ -356,7 +356,7 @@ module "nlb" {
     }
   }
   security_group_tags = {
-    Name = "${var.cluster_name}-nlb"
+    Name = "${var.project_name}-nlb"
   }
 
   listeners = {

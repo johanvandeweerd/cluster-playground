@@ -8,5 +8,5 @@ data "aws_caller_identity" "this" {
 }
 
 data "aws_eks_cluster" "this" {
-  name = var.cluster_name
+  name = var.project_name
 }

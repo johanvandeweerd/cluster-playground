@@ -1,42 +1,40 @@
-locals {
-  name         = var.project_name
-  git_revision = coalesce(var.git_revision, var.project_name)
-}
-
 module "network" {
   source = "./modules/network"
 
-  name = local.name
+  project_name = var.project_name
 }
 
 module "cluster" {
   source = "./modules/cluster"
 
-  cluster_name    = local.name
-  cluster_version = "1.31"
+  project_name = var.project_name
+
+  git_url = var.git_url
 
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
   public_subnet_ids  = module.network.public_subnet_ids
 
-  git_url = var.git_url
+  kubernetes_version = "1.31"
 }
 
 module "platform" {
   source = "./modules/platform"
 
-  git_url      = var.git_url
-  git_revision = local.git_revision
+  project_name = var.project_name
 
-  cluster_name              = module.cluster.cluster_name
-  cluster_oidc_provider     = module.cluster.cluster_oidc_provider
-  cluster_oidc_provider_arn = module.cluster.cluster_oidc_provider_arn
+  git_url      = var.git_url
+  git_revision = var.git_revision
+
+  kubernetes_oidc_provider     = module.cluster.kubernetes_oidc_provider
+  kubernetes_oidc_provider_arn = module.cluster.kubernetes_oidc_provider_arn
 }
 
 module "product" {
   source = "./modules/product"
 
+  project_name = var.project_name
+
   git_url      = var.git_url
-  git_revision = local.git_revision
-  project_name = module.cluster.cluster_name
+  git_revision = var.git_revision
 }

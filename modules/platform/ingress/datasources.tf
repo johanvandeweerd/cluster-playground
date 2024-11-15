@@ -10,7 +10,7 @@ data "aws_default_tags" "this" {
 data "aws_vpc" "this" {
   filter {
     name   = "tag:Name"
-    values = [var.cluster_name]
+    values = [var.project_name]
   }
 }
 
@@ -22,7 +22,7 @@ data "aws_subnets" "public" {
 
   filter {
     name   = "tag:Name"
-    values = ["${var.cluster_name}-public-*"]
+    values = ["${var.project_name}-public-*"]
   }
 }
 
@@ -31,7 +31,7 @@ data "aws_security_group" "this" {
 
   filter {
     name   = "tag:aws:eks:cluster-name"
-    values = [var.cluster_name]
+    values = [var.project_name]
   }
 }
 

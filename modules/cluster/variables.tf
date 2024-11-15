@@ -1,10 +1,10 @@
-variable "cluster_name" {
-  description = "The name of the Kubernetes cluster."
+variable "project_name" {
+  description = "Name to use for the VPC, EKS cluster, etc and to use as prefix to name resources."
   type        = string
 }
 
-variable "cluster_version" {
-  description = "The version of Kubernetes to use."
+variable "git_url" {
+  description = "The Git URL used in the Argpcd application manifests."
   type        = string
 }
 
@@ -23,7 +23,7 @@ variable "public_subnet_ids" {
   type        = list(string)
 }
 
-variable "git_url" {
-  description = "The Git URL used in the Argpcd application manifests."
+variable "kubernetes_version" {
+  description = "The version of Kubernetes to use."
   type        = string
 }

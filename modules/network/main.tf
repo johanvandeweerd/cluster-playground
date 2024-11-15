@@ -8,7 +8,7 @@ locals {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = var.name
+  name = var.project_name
 
   azs = local.azs
 

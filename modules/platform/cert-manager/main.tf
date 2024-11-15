@@ -10,7 +10,7 @@ resource "kubectl_manifest" "application" {
     revision  = var.git_revision
     helmParameters = {
       awsRegion                                                                    = data.aws_region.this.name
-      clusterName                                                                  = var.cluster_name
+      clusterName                                                                  = var.project_name
       "cert-manager.serviceAccount.annotations.eks\\\\.amazonaws\\\\.com/role-arn" = module.iam_role.iam_role_arn
     }
   })
@@ -20,13 +20,13 @@ resource "kubectl_manifest" "application" {
 module "iam_role" {
   source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name        = "${var.cluster_name}-cert-manager"
+  role_name        = "${var.project_name}-cert-manager"
   role_description = "TF: IAM role used by Certificate Manager for IRSA."
 
   oidc_providers = {
-    (var.cluster_name) = {
-      provider                   = var.cluster_oidc_provider
-      provider_arn               = var.cluster_oidc_provider_arn
+    (var.project_name) = {
+      provider                   = var.kubernetes_oidc_provider
+      provider_arn               = var.kubernetes_oidc_provider_arn
       namespace_service_accounts = ["cert-manager:cert-manager"]
     }
   }
@@ -37,7 +37,7 @@ module "iam_role" {
 }
 
 resource "aws_iam_policy" "route53" {
-  name        = "${var.cluster_name}-cert-mananger-route53"
+  name        = "${var.project_name}-cert-mananger-route53"
   description = "TF: IAM policy to allow cert-manager to update Route53"
 
   policy = data.aws_iam_policy_document.route53.json

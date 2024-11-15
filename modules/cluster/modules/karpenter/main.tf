@@ -3,10 +3,10 @@ module "fargate_profile" {
 
   name = "karpenter"
 
-  cluster_name = var.cluster_name
+  cluster_name = var.project_name
   subnet_ids   = var.private_subnet_ids
 
-  iam_role_name            = "${var.cluster_name}-fargate-karpenter"
+  iam_role_name            = "${var.project_name}-fargate-karpenter"
   iam_role_description     = "TF: IAM role used by Fargate for karpenter profile."
   iam_role_use_name_prefix = false
 
@@ -19,18 +19,18 @@ module "iam_roles" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
   version = "~> 20.0"
 
-  cluster_name           = var.cluster_name
-  irsa_oidc_provider_arn = var.cluster_oidc_provider_arn
+  cluster_name           = var.project_name
+  irsa_oidc_provider_arn = var.kubernetes_oidc_provider_arn
 
   iam_role_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
 
-  iam_role_name            = "${var.cluster_name}-karpenter"
+  iam_role_name            = "${var.project_name}-karpenter"
   iam_role_description     = "TF: IAM Role used by Karptener for IRSA."
   iam_role_use_name_prefix = false
 
-  node_iam_role_name            = "${var.cluster_name}-karpenter-node"
+  node_iam_role_name            = "${var.project_name}-karpenter-node"
   node_iam_role_description     = "TF: IAM role used by Karpenter managed nodes."
   node_iam_role_use_name_prefix = false
   node_iam_role_additional_policies = {
@@ -41,7 +41,7 @@ module "iam_roles" {
   create_instance_profile = true
   create_access_entry     = true
 
-  queue_name = "${var.cluster_name}-karpenter"
+  queue_name = "${var.project_name}-karpenter"
 }
 
 resource "helm_release" "this" {
@@ -62,12 +62,12 @@ resource "helm_release" "this" {
 
   set {
     name  = "karpenter.settings.clusterName"
-    value = var.cluster_name
+    value = var.project_name
   }
 
   set {
     name  = "karpenter.settings.clusterEndpoint"
-    value = var.cluster_endpoint
+    value = var.kubernetes_endpoint
   }
 
   set {

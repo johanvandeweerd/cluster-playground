@@ -21,7 +21,7 @@ resource "helm_release" "this" {
 
   set {
     name  = "cluster.name"
-    value = var.cluster_name
+    value = var.project_name
   }
 
   set {
@@ -43,13 +43,13 @@ resource "helm_release" "this" {
 module "iam_role" {
   source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name        = "${var.cluster_name}-argocd"
+  role_name        = "${var.project_name}-argocd"
   role_description = "TF: IAM role used by job for creating secret with Github SSH key."
 
   oidc_providers = {
-    (var.cluster_name) = {
-      provider                   = var.cluster_oidc_provider
-      provider_arn               = var.cluster_oidc_provider_arn
+    (var.project_name) = {
+      provider                   = var.kubernetes_oidc_provider
+      provider_arn               = var.kubernetes_oidc_provider_arn
       namespace_service_accounts = ["argocd:argocd"]
     }
   }
@@ -60,7 +60,7 @@ module "iam_role" {
 }
 
 resource "aws_iam_policy" "secrets_manager_argocd_read_only" {
-  name        = "${var.cluster_name}-secrets-manager-argocd-read-only"
+  name        = "${var.project_name}-secrets-manager-argocd-read-only"
   description = "TF: IAM policy to allow read access for secrets of Argocd"
 
   policy = data.aws_iam_policy_document.secrets_manager_argocd_read_only.json
@@ -73,13 +73,13 @@ data "aws_iam_policy_document" "secrets_manager_argocd_read_only" {
       "secretsmanager:GetSecretValue"
     ]
     resources = [
-      "arn:aws:secretsmanager:${data.aws_region.this.name}:${data.aws_caller_identity.this.account_id}:secret:${var.cluster_name}/argocd/*"
+      "arn:aws:secretsmanager:${data.aws_region.this.name}:${data.aws_caller_identity.this.account_id}:secret:${var.project_name}/argocd/*"
     ]
   }
 }
 
 resource "aws_secretsmanager_secret" "ssh_key" {
-  name                    = "${var.cluster_name}/argocd/ssh-key"
+  name                    = "${var.project_name}/argocd/ssh-key"
   description             = "TF: Secret for Github SSH key used by Argocd"
   recovery_window_in_days = 0
 }
