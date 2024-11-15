@@ -27,3 +27,8 @@ variable "kubernetes_version" {
   description = "The version of Kubernetes to use."
   type        = string
 }
+
+variable "domain_name" {
+  description = "The domain name to use."
+  type        = string
+}

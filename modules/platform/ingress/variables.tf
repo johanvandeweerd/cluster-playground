@@ -22,3 +22,8 @@ variable "kubernetes_oidc_provider_arn" {
   description = "The ARN of the OIDC provider of the Kubernetes cluster"
   type        = string
 }
+
+variable "hosted_zone" {
+  description = "The name of the hosted zone."
+  type        = string
+}

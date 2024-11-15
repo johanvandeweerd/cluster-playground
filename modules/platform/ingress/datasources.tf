@@ -35,6 +35,6 @@ data "aws_security_group" "this" {
   }
 }
 
-data "aws_route53_zone" "hackathon" {
-  name = "hackathon.hootops.com"
+data "aws_route53_zone" "this" {
+  name = var.hosted_zone
 }

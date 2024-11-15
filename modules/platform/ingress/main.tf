@@ -318,8 +318,8 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
 module "acm" {
   source = "terraform-aws-modules/acm/aws"
 
-  domain_name = "*.${var.cluster_name}.hackathon.hootops.com"
-  zone_id     = data.aws_route53_zone.hackathon.zone_id
+  domain_name = "*.${var.project_name}.${var.hosted_zone}"
+  zone_id     = aws_route53_zone.this.zone_id
 
   validation_method = "DNS"
 
@@ -382,9 +382,21 @@ module "nlb" {
 }
 
 # DNS
-resource "aws_route53_record" "alias_star_projectname_hackathon_hootops" {
-  zone_id = data.aws_route53_zone.hackathon.zone_id
-  name    = "*.${var.cluster_name}"
+resource "aws_route53_record" "ns" {
+  zone_id = data.aws_route53_zone.this.zone_id
+  name    = var.project_name
+  type    = "NS"
+  ttl     = 172800
+  records = aws_route53_zone.this.name_servers
+}
+
+resource "aws_route53_zone" "this" {
+  name = "${var.project_name}.${var.hosted_zone}"
+}
+
+resource "aws_route53_record" "star" {
+  zone_id = aws_route53_zone.this.zone_id
+  name    = "*"
   type    = "A"
 
   alias {

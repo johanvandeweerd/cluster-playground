@@ -5,6 +5,8 @@ module "httpbin" {
 
   git_url      = var.git_url
   git_revision = var.git_revision
+
+  domain_name = var.domain_name
 }
 
 module "bucket_lister" {
@@ -14,4 +16,6 @@ module "bucket_lister" {
 
   git_url      = var.git_url
   git_revision = var.git_revision
+
+  domain_name = var.domain_name
 }

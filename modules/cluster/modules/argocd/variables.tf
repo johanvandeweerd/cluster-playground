@@ -18,3 +18,7 @@ variable "git_url" {
   type        = string
 }
 
+variable "domain_name" {
+  description = "The domain name to use."
+  type        = string
+}

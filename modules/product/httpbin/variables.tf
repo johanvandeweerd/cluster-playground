@@ -12,3 +12,8 @@ variable "git_revision" {
   description = "The Git revision used in the Argocd application manifest"
   type        = string
 }
+
+variable "domain_name" {
+  description = "The domain name to use."
+  type        = string
+}

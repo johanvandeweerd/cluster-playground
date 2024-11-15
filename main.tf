@@ -16,6 +16,8 @@ module "cluster" {
   public_subnet_ids  = module.network.public_subnet_ids
 
   kubernetes_version = "1.31"
+
+  domain_name = "${var.project_name}.${var.hosted_zone}"
 }
 
 module "platform" {
@@ -28,6 +30,8 @@ module "platform" {
 
   kubernetes_oidc_provider     = module.cluster.kubernetes_oidc_provider
   kubernetes_oidc_provider_arn = module.cluster.kubernetes_oidc_provider_arn
+
+  hosted_zone = var.hosted_zone
 }
 
 module "product" {
@@ -37,4 +41,6 @@ module "product" {
 
   git_url      = var.git_url
   git_revision = var.git_revision
+
+  domain_name = "${var.project_name}.${var.hosted_zone}"
 }

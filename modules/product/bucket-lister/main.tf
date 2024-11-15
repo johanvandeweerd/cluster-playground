@@ -11,6 +11,7 @@ resource "kubectl_manifest" "application" {
     helmParameters = {
       projectName = var.project_name
       roleArn     = aws_iam_role.this.arn
+      domainName  = "${var.project_name}.${var.domain_name}"
     }
   })
 }

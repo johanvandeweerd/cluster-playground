@@ -11,5 +11,9 @@ variable "git_url" {
 variable "git_revision" {
   description = "The Git revision used in the Argpcd application manifests."
   type        = string
-  default     = null
+}
+
+variable "hosted_zone" {
+  description = "The hosted zone under which the project name is used as a subdomain for this project."
+  type        = string
 }

@@ -16,7 +16,7 @@ resource "helm_release" "this" {
 
   set {
     name  = "argo-cd.server.ingress.hostname"
-    value = "argocd.${var.cluster_name}.hackathon.hootops.com"
+    value = "argocd.${var.domain_name}"
   }
 
   set {

@@ -10,6 +10,7 @@ resource "kubectl_manifest" "application" {
     revision  = var.git_revision
     helmParameters = {
       projectName = var.project_name
+      domainName  = "${var.project_name}.${var.domain_name}"
     }
   })
 }

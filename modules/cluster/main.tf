@@ -48,6 +48,8 @@ module "argocd" {
 
   git_url = var.git_url
 
+  domain_name = var.domain_name
+
   depends_on = [
     module.karpenter
   ]
