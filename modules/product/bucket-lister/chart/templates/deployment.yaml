@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: bucket-lister
-          image: 489066871263.dkr.ecr.eu-west-1.amazonaws.com/bucket-lister:47de917
+          image: ghcr.io/johanvandeweerd/bucket-lister:20241114173745-3104cbf
           ports:
             - name: http
               containerPort: 8080
