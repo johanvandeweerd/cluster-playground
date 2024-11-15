@@ -8,6 +8,12 @@ variable "git_url" {
   type        = string
 }
 
+variable "git_private_ssh_key" {
+  description = "The SSH key, as base64 encoded string, used by Argocd to sync with a private Git repository. Omit is using a public repository."
+  type        = string
+  default     = null
+}
+
 variable "vpc_id" {
   description = "The ID of the VPC to create the Kubernetes cluster in."
   type        = string

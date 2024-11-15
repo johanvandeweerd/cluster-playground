@@ -13,6 +13,12 @@ variable "git_revision" {
   type        = string
 }
 
+variable "git_private_ssh_key" {
+  description = "The SSH key, as base64 encoded string, used by Argocd to sync with a private Git repository. Omit is using a public repository."
+  type        = string
+  default     = null
+}
+
 variable "hosted_zone" {
   description = "The hosted zone under which the project name is used as a subdomain for this project."
   type        = string

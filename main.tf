@@ -9,7 +9,8 @@ module "cluster" {
 
   project_name = var.project_name
 
-  git_url = var.git_url
+  git_url             = var.git_url
+  git_private_ssh_key = var.git_private_ssh_key
 
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids

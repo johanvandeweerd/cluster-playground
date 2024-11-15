@@ -46,7 +46,8 @@ module "argocd" {
   kubernetes_oidc_provider     = module.eks.cluster_endpoint
   kubernetes_oidc_provider_arn = module.eks.oidc_provider_arn
 
-  git_url = var.git_url
+  git_url             = var.git_url
+  git_private_ssh_key = var.git_private_ssh_key
 
   domain_name = var.domain_name
 

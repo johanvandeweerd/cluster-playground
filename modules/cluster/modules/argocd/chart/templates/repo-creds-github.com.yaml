@@ -1,0 +1,12 @@
+{{ if .Values.git.sshPrivateKey -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds
+  name: repo-creds-github-com
+data:
+  url: {{ .Values.git.url | b64enc }}
+  type: {{ "git" | b64enc }}
+  sshPrivateKey: {{ .Values.git.sshPrivateKey }}
+{{ end -}}
