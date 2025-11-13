@@ -34,7 +34,7 @@ variable "kubernetes_version" {
   type        = string
 }
 
-variable "domain_name" {
-  description = "The domain name to use."
+variable "hosted_zone" {
+  description = "The hosted zone to use."
   type        = string
 }

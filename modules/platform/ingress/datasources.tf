@@ -42,3 +42,11 @@ data "aws_route53_zone" "this" {
 data "aws_ec2_managed_prefix_list" "cloudfront" {
   name = "com.amazonaws.global.cloudfront.origin-facing"
 }
+
+data "aws_cloudfront_cache_policy" "this" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_origin_request_policy" "this" {
+  name = "Managed-AllViewer"
+}

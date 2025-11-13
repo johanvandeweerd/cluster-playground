@@ -26,7 +26,8 @@ resource "kubectl_manifest" "application_traefik" {
 
 # IAM
 module "iam_role_aws_load_balancer_controller" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "~> 2.0"
 
   name            = "${var.project_name}-aws-load-balancer-controller"
   description     = "TF: IAM role used by AWS Load Balancer controller for IRSA."
@@ -53,7 +54,8 @@ module "certificate_cloudfront" {
     aws = aws.us_east_1
   }
 
-  source = "terraform-aws-modules/acm/aws"
+  source  = "terraform-aws-modules/acm/aws"
+  version = "~> 2.0"
 
   domain_name = "*.${var.project_name}.${var.hosted_zone}"
   zone_id     = aws_route53_zone.this.zone_id
@@ -64,7 +66,8 @@ module "certificate_cloudfront" {
 }
 
 module "cdn" {
-  source = "terraform-aws-modules/cloudfront/aws"
+  source  = "terraform-aws-modules/cloudfront/aws"
+  version = "~> 1.0"
 
   aliases = ["*.${var.project_name}.${var.hosted_zone}"]
 
@@ -99,14 +102,14 @@ module "cdn" {
     compress        = true
     query_string    = true
 
-    use_forwarded_values         = false
-    cache_policy_name            = "Managed-CachingDisabled"
-    origin_request_policy_name   = "Managed-AllViewer"
-    response_headers_policy_name = "Managed-CORS-With-Preflight"
+    use_forwarded_values = false
+
+    cache_policy_id          = data.aws_cloudfront_cache_policy.this.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.this.id
   }
 
   viewer_certificate = {
-    acm_certificate_arn      = module.certificate_cloudfront.acm_certificate_arn
+    acm_certificate_arn      = module.certificate_cloudfront.this_acm_certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
@@ -114,7 +117,8 @@ module "cdn" {
 
 # Load Balancer
 module "certificate_load_balancer" {
-  source = "terraform-aws-modules/acm/aws"
+  source  = "terraform-aws-modules/acm/aws"
+  version = "~> 2.0"
 
   domain_name = "alb.${var.project_name}.${var.hosted_zone}"
   zone_id     = aws_route53_zone.this.zone_id
@@ -125,7 +129,8 @@ module "certificate_load_balancer" {
 }
 
 module "alb" {
-  source = "terraform-aws-modules/alb/aws"
+  source  = "terraform-aws-modules/alb/aws"
+  version = "~> 10.0"
 
   name    = var.project_name
   vpc_id  = data.aws_vpc.this.id
@@ -162,7 +167,7 @@ module "alb" {
     https = {
       port            = 443
       protocol        = "HTTPS"
-      certificate_arn = module.certificate_load_balancer.acm_certificate_arn
+      certificate_arn = module.certificate_load_balancer.this_acm_certificate_arn
       fixed_response = {
         content_type = "text/plain"
         message_body = "Unauthorized"
@@ -171,8 +176,9 @@ module "alb" {
       rules = {
         default = {
           actions = [{
-            type             = "forward"
-            target_group_key = "traefik"
+            forward = {
+              target_group_key = "traefik"
+            }
           }]
           conditions = [{
             http_header = {
@@ -254,8 +260,8 @@ resource "aws_route53_record" "star" {
   type    = "A"
 
   alias {
-    zone_id                = module.cdn.cloudfront_distribution_hosted_zone_id
-    name                   = module.cdn.cloudfront_distribution_domain_name
+    zone_id                = module.cdn.this_cloudfront_distribution_hosted_zone_id
+    name                   = module.cdn.this_cloudfront_distribution_domain_name
     evaluate_target_health = false
   }
 }

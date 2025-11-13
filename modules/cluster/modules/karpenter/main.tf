@@ -1,5 +1,6 @@
 module "fargate_profile" {
-  source = "terraform-aws-modules/eks/aws//modules/fargate-profile"
+  source  = "terraform-aws-modules/eks/aws//modules/fargate-profile"
+  version = "~> 21.0"
 
   name = "karpenter"
 
@@ -17,18 +18,18 @@ module "fargate_profile" {
 
 module "iam_roles" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "~> 20.0"
+  version = "~> 21.0"
 
-  cluster_name           = var.project_name
-  irsa_oidc_provider_arn = var.kubernetes_oidc_provider_arn
+  cluster_name = var.project_name
 
   iam_role_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
 
-  iam_role_name            = "${var.project_name}-karpenter"
-  iam_role_description     = "TF: IAM Role used by Karptener for IRSA."
-  iam_role_use_name_prefix = false
+  iam_role_name                           = "${var.project_name}-karpenter"
+  iam_role_description                    = "TF: IAM Role used by Karptener for IRSA."
+  iam_role_use_name_prefix                = false
+  iam_role_source_assume_policy_documents = [data.aws_iam_policy_document.karpenter_assume_role.json]
 
   node_iam_role_name            = "${var.project_name}-karpenter-node"
   node_iam_role_description     = "TF: IAM role used by Karpenter managed nodes."
@@ -38,11 +39,32 @@ module "iam_roles" {
   }
 
   # IRSA is used instead of Pod Identity because Karpenter runs on Fargate and no Pod Identity pods are available yet.
-  enable_irsa             = true
-  create_instance_profile = true
-  create_access_entry     = true
+  create_pod_identity_association = false
+  create_instance_profile         = true
+  create_access_entry             = true
 
   queue_name = "${var.project_name}-karpenter"
+}
+
+data "aws_iam_policy_document" "karpenter_assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [var.kubernetes_oidc_provider_arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${var.kubernetes_oidc_provider}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${var.kubernetes_oidc_provider}:sub"
+      values   = ["system:serviceaccount:karpenter:karpenter"]
+    }
+  }
 }
 
 resource "helm_release" "this" {

@@ -9,14 +9,15 @@ resource "kubectl_manifest" "application" {
     gitUrl    = var.git_url
     revision  = var.git_revision
     helmParameters = {
-      "eks-chart.aws.region" = data.aws_region.this.name
+      "eks-chart.aws.region" = data.aws_region.this.region
     }
   })
 }
 
 # IAM
 module "iam_role" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "~> 2.0"
 
   name            = "${var.project_name}-ack-eks"
   description     = "TF: IAM role used by AWS Controller for Kubernetes for EKS."
@@ -55,7 +56,7 @@ data "aws_iam_policy_document" "pod_identity" {
       "eks:TagResource",
       "eks:UpdatePodIdentityAssociation",
     ]
-    resources = ["arn:${data.aws_partition.this.id}:eks:${data.aws_region.this.name}:${data.aws_caller_identity.this.account_id}:podidentityassociation/${var.project_name}/*"]
+    resources = ["arn:${data.aws_partition.this.id}:eks:${data.aws_region.this.region}:${data.aws_caller_identity.this.account_id}:podidentityassociation/${var.project_name}/*"]
   }
   statement {
     sid    = "AllowPassAndGetRole"

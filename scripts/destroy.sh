@@ -1,5 +1,6 @@
 #!/bin/zsh
 
+terraform apply -target module.product -destroy -auto-approve
 terraform apply -target module.platform -destroy -auto-approve
 kubectl delete poddisruptionbudget -A --all
 kubectl delete nodepool --all

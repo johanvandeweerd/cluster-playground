@@ -16,9 +16,9 @@ module "cluster" {
   private_subnet_ids = module.network.private_subnet_ids
   public_subnet_ids  = module.network.public_subnet_ids
 
-  kubernetes_version = "1.31"
+  kubernetes_version = "1.34"
 
-  domain_name = "${var.project_name}.${var.hosted_zone}"
+  hosted_zone = var.hosted_zone
 }
 
 module "platform" {
