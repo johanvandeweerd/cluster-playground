@@ -1,7 +1,0 @@
-apiVersion: v2
-name: aws-controller-kubernetes
-version: 0.0.1
-dependencies:
-  - name: eks-chart
-    repository: oci://public.ecr.aws/aws-controllers-k8s
-    version: 1.5.1
