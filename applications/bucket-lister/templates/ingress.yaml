@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: bucket-lister
+  name: bucket-lister
+spec:
+  ingressClassName: ingress
+  rules:
+    - host: bucket-lister.{{ .Values.domainName }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: bucket-lister
+                port:
+                  name: http
+            pathType: Prefix
+            path: /

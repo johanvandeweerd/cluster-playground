@@ -1,0 +1,11 @@
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  namespace: kube-public
+  name: cluster
+  annotations:
+    services.k8s.aws/read-only: "true"
+spec:
+  name: {{ .Values.clusterName }}
+  resourcesVPCConfig:
+    subnetIDs: []

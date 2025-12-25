@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bucket-lister
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/johan-vandeweerd-hs/cluster-playground
+    path: applications/bucket-lister
+    targetRevision: eks-auto
+    helm:
+      parameters:
+        - name: domainName
+          value: {{ .Values.domainName }}
+        - name: projectName
+          value: {{ .Values.projectName }}
+        - name: aws.accountId
+          value: "{{ .Values.aws.accountId }}"
+  destination:
+    server: {{ .Values.cluster.arn }}
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

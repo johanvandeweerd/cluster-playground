@@ -1,0 +1,3 @@
+apiVersion: v2
+name: bucket-lister
+version: 0.0.1

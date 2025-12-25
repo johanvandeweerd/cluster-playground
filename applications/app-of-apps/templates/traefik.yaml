@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/johan-vandeweerd-hs/cluster-playground
+    path: applications/traefik
+    targetRevision: eks-auto
+    helm:
+      parameters:
+        - name: targetGroupArn
+          value: {{ .Values.targetGroupArn }}
+  destination:
+    server: {{ .Values.cluster.arn }}
+    namespace: traefik
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        elbv2.k8s.aws/pod-readiness-gate-inject: enabled
+    automated:
+      prune: true
+      selfHeal: true
