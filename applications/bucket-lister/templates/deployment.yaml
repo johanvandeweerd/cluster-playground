@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: bucket-lister
-          image: ghcr.io/johanvandeweerd/bucket-lister:20241114173745-3104cbf
+          image: ghcr.io/johan-vandeweerd-hs/bucket-lister:20251228140622-90812a8
           ports:
             - name: http
               containerPort: 8080
