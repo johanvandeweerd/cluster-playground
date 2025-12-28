@@ -163,6 +163,81 @@ module "eks_addons" {
   observability_tag = null
 
   eks_addons = {
+    cert-manager = {
+      most_recent = true
+      configuration_values = jsonencode({
+        topologySpreadConstraints = [
+          {
+            topologyKey       = "topology.kubernetes.io/zone"
+            maxSkew           = 1
+            whenUnsatisfiable = "DoNotSchedule"
+            minDomains        = 3
+            labelSelector = { matchLabels = {
+              "app.kubernetes.io/instance" = "cert-manager"
+              "app.kubernetes.io/name"     = "cert-manager"
+            } }
+          },
+          {
+            topologyKey       = "kubernetes.io/hostname"
+            maxSkew           = 1
+            whenUnsatisfiable = "DoNotSchedule"
+            labelSelector = { matchLabels = {
+              "app.kubernetes.io/instance" = "cert-manager"
+              "app.kubernetes.io/name"     = "cert-manager"
+            } }
+          },
+        ]
+        cainjector = {
+          topologySpreadConstraints = [
+            {
+              topologyKey       = "topology.kubernetes.io/zone"
+              maxSkew           = 1
+              whenUnsatisfiable = "DoNotSchedule"
+              minDomains        = 3
+              labelSelector = { matchLabels = {
+                "app.kubernetes.io/instance" = "cert-manager"
+                "app.kubernetes.io/name"     = "cainjector"
+              } }
+            },
+            {
+              topologyKey       = "kubernetes.io/hostname"
+              maxSkew           = 1
+              whenUnsatisfiable = "DoNotSchedule"
+              labelSelector = { matchLabels = {
+                "app.kubernetes.io/instance" = "cert-manager"
+                "app.kubernetes.io/name"     = "cainjector"
+              } }
+            },
+          ]
+        }
+        webhook = {
+          topologySpreadConstraints = [
+            {
+              topologyKey       = "topology.kubernetes.io/zone"
+              maxSkew           = 1
+              whenUnsatisfiable = "DoNotSchedule"
+              minDomains        = 3
+              labelSelector = { matchLabels = {
+                "app.kubernetes.io/instance" = "cert-manager"
+                "app.kubernetes.io/name"     = "webhook"
+              } }
+            },
+            {
+              topologyKey       = "kubernetes.io/hostname"
+              maxSkew           = 1
+              whenUnsatisfiable = "DoNotSchedule"
+              labelSelector = { matchLabels = {
+                "app.kubernetes.io/instance" = "cert-manager"
+                "app.kubernetes.io/name"     = "webhook"
+              } }
+            },
+          ]
+        }
+      })
+    }
+    adot = {
+      most_recent = true
+    }
     metrics-server = {
       most_recent = true
       configuration_values = jsonencode({
@@ -185,9 +260,23 @@ module "eks_addons" {
     }
     kube-state-metrics = {
       most_recent = true
+      configuration_values = jsonencode({
+        podAnnotations = {
+          "prometheus.io/scrape" = "true"
+          "prometheus.io/port"   = "8080"
+          "prometheus.io/path"   = "/metrics"
+        }
+      })
     }
     prometheus-node-exporter = {
       most_recent = true
+      configuration_values = jsonencode({
+        podAnnotations = {
+          "prometheus.io/scrape" = "true"
+          "prometheus.io/port"   = "9100"
+          "prometheus.io/path"   = "/metrics"
+        }
+      })
     }
   }
 }

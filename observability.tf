@@ -14,25 +14,6 @@ module "prometheus" {
   }
 }
 
-resource "aws_prometheus_scraper" "this" {
-  alias = "general"
-
-  source {
-    eks {
-      cluster_arn = module.eks.cluster_arn
-      subnet_ids  = module.vpc.private_subnets
-    }
-  }
-
-  destination {
-    amp {
-      workspace_arn = module.prometheus.workspace_arn
-    }
-  }
-
-  scrape_configuration = data.aws_prometheus_default_scraper_configuration.this.configuration
-}
-
 module "grafana" {
   source  = "terraform-aws-modules/managed-service-grafana/aws"
   version = "~> 2.0"
@@ -79,5 +60,38 @@ module "grafana" {
       role      = "ADMIN"
       group_ids = [data.aws_identitystore_group.grafana_admin.id]
     }
+  }
+}
+
+module "iam_role_open_telemetry" {
+  source = "terraform-aws-modules/eks-pod-identity/aws"
+
+  name            = "${var.project_name}-open-telemetry"
+  use_name_prefix = false
+
+  trust_policy_conditions = [
+    {
+      test     = "StringLike"
+      variable = "aws:SourceArn"
+      values   = [module.eks.cluster_arn]
+    }
+  ]
+
+  associations = {
+    open-telemetry-logs-collector = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = "open-telemetry"
+      service_account = "open-telemetry-logs-collector"
+    }
+    open-telemetry-metrics-collector = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = "open-telemetry"
+      service_account = "open-telemetry-metrics-collector"
+    }
+  }
+
+  additional_policy_arns = {
+    AmazonPrometheusFullAccess  = "arn:aws:iam::aws:policy/AmazonPrometheusRemoteWriteAccess"
+    CloudWatchAgentServerPolicy = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
   }
 }
