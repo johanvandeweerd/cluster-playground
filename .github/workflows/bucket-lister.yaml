@@ -2,7 +2,7 @@ name: Build and push bucket-lister image to ghcr.io
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "eks-auto" ]
     paths:
       - 'images/bucket-lister/**'
       - '.github/workflows/bucket-lister.yaml'
