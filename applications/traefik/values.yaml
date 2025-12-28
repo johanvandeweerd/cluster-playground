@@ -74,3 +74,9 @@ traefik:
     enabled: true
     minReplicas: 2
     maxReplicas: 5
+
+  metrics:
+    prometheus:
+      enabled: true
+      addEntryPointsLabels: true
+      addServicesLabels: true
