@@ -1,0 +1,72 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: open-telemetry-logs
+spec:
+  mode: daemonset
+  managementState: managed
+  serviceAccount: open-telemetry-logs-collector
+  priorityClassName: system-node-critical
+  imagePullPolicy: Always
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 512Mi
+  volumes:
+    - name: container-logs
+      hostPath:
+        path: /var/log/pods
+  volumeMounts:
+    - name: container-logs
+      mountPath: /var/log/pods
+      readOnly: true
+  securityContext:
+    runAsGroup: 0
+    runAsUser: 0
+  config:
+    receivers:
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        include_file_name: false
+        include_file_path: true
+        operators:
+          - id: container-parser
+            type: container
+        start_at: end
+    processors:
+      batch: { }
+      k8sattributes:
+        extract:
+          metadata:
+            - k8s.node.name
+            - k8s.namespace.name
+            - k8s.pod.name
+            - service.namespace
+            - service.name
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
+    exporters:
+      awscloudwatchlogs:
+        log_group_name: /aws/eks/johan/container
+        log_stream_name: "{ServiceName}"
+        log_retention: 7
+    service:
+      pipelines:
+        logs:
+          receivers:
+            - filelog
+          processors:
+            - k8sattributes
+            - batch
+          exporters:
+            - awscloudwatchlogs

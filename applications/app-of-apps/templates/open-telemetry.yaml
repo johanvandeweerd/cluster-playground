@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: open-telemetry
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/johan-vandeweerd-hs/cluster-playground
+    path: applications/open-telemetry
+    targetRevision: eks-auto
+    helm:
+      parameters:
+        - name: aws.region
+          value: {{ .Values.aws.region }}
+        - name: prometheus.endpoint
+          value: {{ .Values.prometheus.endpoint }}
+  destination:
+    server: {{ .Values.cluster.arn }}
+    namespace: open-telemetry
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

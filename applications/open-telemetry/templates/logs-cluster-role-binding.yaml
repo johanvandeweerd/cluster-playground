@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: open-telemetry-logs-collector
+subjects:
+  - kind: ServiceAccount
+    namespace: open-telemetry
+    name: open-telemetry-logs-collector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: open-telemetry-logs
