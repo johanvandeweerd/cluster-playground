@@ -133,11 +133,15 @@ resource "kubectl_manifest" "argocd_application_app_of_apps" {
             domainName  = "${var.project_name}.${var.hosted_zone}"
             aws = {
               accountId = data.aws_caller_identity.this.account_id
+              region    = data.aws_region.this.id
             }
             cluster = {
               name      = module.eks.cluster_name
               arn       = module.eks.cluster_arn
               subnetIds = module.vpc.private_subnets
+            }
+            prometheus = {
+              endpoint = module.prometheus.workspace_prometheus_endpoint
             }
             targetGroupArn = module.alb.target_groups["traefik"].arn
           }
