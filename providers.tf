@@ -18,6 +18,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project = var.project_name
+      Service = var.project_name
     }
   }
 }
@@ -31,6 +32,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project = var.project_name
+      Service = var.project_name
     }
   }
 }
