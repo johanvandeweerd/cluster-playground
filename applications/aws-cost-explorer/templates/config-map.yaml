@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-cost-exporter
+data:
+  exporter_config.yaml: |
+    exporter_port: 9090
+    polling_interval_seconds: 28800
+
+    metrics:
+      - metric_name: aws_daily_cost_daily
+        metric_description: Daily cost of AWS resources in USD by Hootsuite service and AWS service
+        metric_type: NetAmortizedCost
+        granularity: DAILY
+        record_types:
+          - Usage
+          - DiscountedUsage
+          - SavingsPlanCoveredUsage
+    #    tag_filters:
+    #      - tag_key: Environment
+    #        tag_values:
+    #          - production
+        group_by:
+          enabled: true
+          groups:
+            - type: TAG
+              key: Service
+              label_name: service
+            - type: DIMENSION
+              key: SERVICE
+              label_name: aws_service
+          merge_minor_cost:
+            enabled: false
+
+    target_aws_accounts:
+      - Publisher: "{{ .Values.aws.accountId }}"
+        env: production

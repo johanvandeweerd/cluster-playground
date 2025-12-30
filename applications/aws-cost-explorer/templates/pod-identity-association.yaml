@@ -1,0 +1,16 @@
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: PodIdentityAssociation
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+  labels:
+    app: aws-cost-exporter
+  name: aws-cost-exporter
+spec:
+  clusterRef:
+    from:
+      namespace: kube-public
+      name: cluster
+  namespace: default
+  roleARN: arn:aws:iam::{{ .Values.aws.accountId }}:role/{{ .Values.projectName }}-aws-cost-exporter
+  serviceAccount: aws-cost-exporter
