@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: aws-cost-exporter
+  name: aws-cost-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aws-cost-exporter
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9090"
+      labels:
+        app: aws-cost-exporter
+    spec:
+      serviceAccountName: aws-cost-exporter
+      containers:
+        - name: aws-cost-exporter
+          image: opensourceelectrolux/aws-cost-exporter:v1.1.1
+          command: [ "python", "main.py", "-c", "/exporter_config.yaml" ]
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9090
+              name: metrics
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+          resources:
+            requests:
+              cpu: 50m
+              memory: 250Mi
+            limits:
+              memory: 250Mi
+          volumeMounts:
+            - name: config-volume
+              mountPath: /exporter_config.yaml
+              subPath: exporter_config.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: aws-cost-exporter
