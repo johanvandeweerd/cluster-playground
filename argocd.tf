@@ -138,8 +138,16 @@ resource "kubectl_manifest" "argocd_application_app_of_apps" {
               subnetIds = module.vpc.private_subnets
             }
             prometheus = {
-              endpoint = module.prometheus.workspace_prometheus_endpoint
+              endpoint    = module.prometheus.workspace_prometheus_endpoint
+              workspaceId = module.prometheus.workspace_id
             }
+            athena = {
+              bucket    = "bucket"
+              workgroup = "workgroup"
+              database  = "database"
+              table     = "table"
+            }
+
             targetGroupArn = module.alb.target_groups["traefik"].arn
           }
         }
