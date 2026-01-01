@@ -1,0 +1,85 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opencost
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/johan-vandeweerd-hs/cluster-playground
+    path: applications/opencost
+    targetRevision: eks-auto
+    helm:
+      valuesObject:
+        aws:
+          accountId: '{{ .Values.aws.accountId }}'
+          region: {{ .Values.aws.region }}
+        athena:
+          bucket: {{ .Values.opencost.athena.bucket }}
+          workgroup: {{ .Values.opencost.athena.workgroup }}
+          database: {{ .Values.opencost.athena.database }}
+          table: {{ .Values.opencost.athena.table }}
+        opencost:
+          loglevel: debug
+
+          podAnnotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/path: "/metrics"
+            prometheus.io/port: "9003"
+
+          opencost:
+            cloudIntegrationSecret: cloud-costs
+
+            cloudCost:
+              enabled: true
+            customPricing:
+              enabled: false
+            carbonCost:
+              enabled: false
+
+            mcp:
+              enabled: false
+
+            sigV4Proxy:
+              imagePullPolicy: Always
+              region: {{ .Values.aws.region }}
+              host: aps-workspaces.{{ .Values.aws.region }}.amazonaws.com
+
+            prometheus:
+              internal:
+                enabled: false
+              external:
+                enabled: false
+              amp:
+                enabled: true
+                workspaceId: {{ .Values.opencost.prometheus.workspaceId }}
+              thanos:
+                enabled: false
+
+            ui:
+              ingress:
+                enabled: true
+                ingressClassName: ingress
+                hosts:
+                  - host: opencost.{{ .Values.domainName }}
+                    paths:
+                      - /
+
+            exporter:
+              image:
+                pullPolicy: Always
+              # Temporary fix for
+              extraVolumeMounts:
+                - mountPath: /var/configs
+                  name: cloud-integration
+  destination:
+    server: {{ .Values.cluster.arn }}
+    namespace: opencost
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

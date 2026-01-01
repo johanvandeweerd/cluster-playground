@@ -141,7 +141,19 @@ resource "kubectl_manifest" "argocd_application_app_of_apps" {
               subnetIds = module.vpc.private_subnets
             }
             prometheus = {
-              endpoint = module.prometheus.workspace_prometheus_endpoint
+              endpoint    = module.prometheus.workspace_prometheus_endpoint
+              workspaceId = module.prometheus.workspace_id
+            }
+            opencost = {
+              prometheus = {
+                workspaceId = module.prometheus.workspace_id
+              }
+              athena = {
+                bucket    = module.opencost_athena_s3_bucket.s3_bucket_id
+                workgroup = aws_athena_workgroup.opencost.id
+                database  = aws_glue_catalog_database.opencost.name
+                table     = "${var.project_name}_opencost_cur_report"
+              }
             }
             targetGroupArn = module.alb.target_groups["traefik"].arn
           }
