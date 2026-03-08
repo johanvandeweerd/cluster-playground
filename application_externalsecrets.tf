@@ -23,6 +23,17 @@ module "external_secrets_iam_role" {
     },
   ]
 
+  policy_statements = [
+    {
+      sid     = "AllowAssumeRole"
+      effect  = "Allow"
+      actions = ["sts:AssumeRole", "sts:TagSession"]
+      resources = [
+        module.open_telemetry_iam_role.arn
+      ]
+    }
+  ]
+
   associations = {
     custom-association = {
       cluster_name    = module.eks.cluster_name

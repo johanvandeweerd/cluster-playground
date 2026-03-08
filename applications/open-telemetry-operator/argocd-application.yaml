@@ -13,12 +13,14 @@ spec:
     targetRevision: 0.106.0
     helm:
       valuesObject:
+        fullnameOverride: open-telemetry-operator
         revisionHistoryLimit: 0
         admissionWebhooks:
-          certManager:
-            enabled: false
           autoGenerateCert:
-            enabled: true
+            enabled: false
+        manager:
+          collectorImage:
+            repository: otel/opentelemetry-collector-contrib
   destination:
     server: ${clusterArn}
     namespace: open-telemetry-operator
