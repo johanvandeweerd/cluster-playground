@@ -16,6 +16,8 @@ traefik:
     kubernetesIngress:
       enabled: true
       ingressClass: ingress
+      publishedService:
+        enabled: false
 
   ports:
     web:
@@ -48,16 +50,6 @@ traefik:
     access:
       enabled: true
       format:  json
-
-  additionalArguments:
-    # Allow accessing the dashboard at http://localhost:9000/dashboard/ when using port-forward
-    - --api.insecure=true
-    # Skip TLS verification for backends with self-signed certificates
-    - --serversTransport.insecureSkipVerify=true
-    # Force Traefik to set a hostname on the status field of Ingress resources to stop Argocd from marking ingress
-    # resources as "Progressing".
-    # https://github.com/argoproj/argo-cd/issues/14607#issuecomment-1966557671
-    - --providers.kubernetesingress.ingressendpoint.hostname=ingress.example.org
 
   service:
     enabled: true
