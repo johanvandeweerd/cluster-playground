@@ -118,6 +118,18 @@ resource "aws_security_group_rule" "allow_alb_to_worker_nodes_on_8080" {
   source_security_group_id = module.alb.security_group_id
 }
 
+resource "aws_route53_record" "ns" {
+  zone_id = data.aws_route53_zone.this.zone_id
+  name    = var.project_name
+  type    = "NS"
+  ttl     = 172800
+  records = aws_route53_zone.this.name_servers
+}
+
+resource "aws_route53_zone" "this" {
+  name = "${var.project_name}.${var.hosted_zone}"
+}
+
 resource "aws_route53_record" "star" {
   zone_id = aws_route53_zone.this.zone_id
   name    = "*"
