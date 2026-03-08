@@ -10,14 +10,13 @@ spec:
   source:
     repoURL: https://github.com/johan-vandeweerd-hs/cluster-playground
     path: applications/platform
-    targetRevision: eks-auto
+    targetRevision: observability
     helm:
-      parameters:
-        - name: clusterName
-          value: {{ .Values.cluster.name }}
+      valuesObject:
+        clusterName: ${clusterName}
   destination:
-    server: {{ .Values.cluster.arn }}
-    namespace: default
+    server: ${clusterArn}
+    namespace: kube-public
   syncPolicy:
     automated:
       prune: true
