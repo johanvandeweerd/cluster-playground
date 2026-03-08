@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.19.2
+  destination:
+    server: ${clusterArn}
+    namespace: external-secrets
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    automated:
+      prune: true
+      selfHeal: true
