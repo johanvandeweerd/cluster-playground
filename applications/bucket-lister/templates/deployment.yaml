@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bucket-lister
+  name: bucket-lister
+spec:
+  replicas: 2
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: bucket-lister
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+      labels:
+        app: bucket-lister
+    spec:
+      containers:
+        - name: bucket-lister
+          image: ghcr.io/johan-vandeweerd-hs/bucket-lister:20251228140622-90812a8
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources: {}
+      restartPolicy: Always
+      serviceAccountName: bucket-lister

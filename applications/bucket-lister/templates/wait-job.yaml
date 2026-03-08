@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app: bucket-lister
+  name: bucket-lister-sleep
+spec:
+  backoffLimit: 2
+  completions: 1
+  template:
+    spec:
+      containers:
+        - name: sleep
+          image: alpine
+          command:
+            - sh
+            - -c
+            - env | grep AWS_CONTAINER ; if [ $? -ne 0 ]; then echo 'No Pod Identity environment variables set'; exit 1; else echo 'Pod Identity environment variables found. Continuing ...'; fi
+      restartPolicy: OnFailure
+      activeDeadlineSeconds: 15
+      serviceAccountName: bucket-lister
