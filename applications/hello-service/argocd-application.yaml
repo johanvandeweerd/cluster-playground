@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-service
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/johan-vandeweerd-hs/cluster-playground
+    path: applications/hello-service
+    targetRevision: observability
+    helm:
+      valuesObject:
+        kafka:
+          address: ${kafka.address}
+          topic: ${kafka.topic}
+        domainName: ${domainName}
+  destination:
+    server: ${clusterArn}
+    namespace: default
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

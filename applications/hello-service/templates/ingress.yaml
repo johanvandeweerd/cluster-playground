@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: hello-service
+  name: hello-service
+spec:
+  ingressClassName: ingress
+  rules:
+    - host: hello.{{ .Values.domainName }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: hello-service
+                port:
+                  name: http
+            pathType: Prefix
+            path: /

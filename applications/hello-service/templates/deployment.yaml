@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-service
+  name: hello-service
+spec:
+  replicas: 2
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: hello-service
+  template:
+    metadata:
+      labels:
+        app: hello-service
+    spec:
+      containers:
+        - name: service
+          image: ghcr.io/johan-vandeweerd-hs/hello-service:20260309125948-99af606
+          env:
+            - name: KAFKA_ADDRESS
+              value: {{ .Values.kafka.address }}
+            - name: KAFKA_TOPIC
+              value: {{ .Values.kafka.topic }}
+            - name: MESSAGE_SERVICE_URL
+              value: http://message-service
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always

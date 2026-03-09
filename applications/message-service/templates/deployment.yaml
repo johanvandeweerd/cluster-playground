@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: message-service
+  name: message-service
+spec:
+  replicas: 2
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: message-service
+  template:
+    metadata:
+      labels:
+        app: message-service
+    spec:
+      containers:
+        - name: service
+          image: ghcr.io/johan-vandeweerd-hs/message-service:20260309125947-99af606
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always

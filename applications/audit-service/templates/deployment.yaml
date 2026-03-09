@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: audit-service
+  name: audit-service
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: audit-service
+  template:
+    metadata:
+      labels:
+        app: audit-service
+    spec:
+      containers:
+        - name: service
+          image: ghcr.io/johan-vandeweerd-hs/audit-service:20260309125948-99af606
+          env:
+            - name: KAFKA_ADDRESS
+              value: {{ .Values.kafka.address }}
+            - name: KAFKA_TOPIC
+              value: {{ .Values.kafka.topic }}
+      restartPolicy: Always
