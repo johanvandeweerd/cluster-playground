@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+      KAFKA_LOG4J_LOGGERS: "kafka=WARN,kafka.controller=WARN,kafka.log.LogCleaner=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN"
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+  message-service:
+    build:
+      context: ./message-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+  hello-service:
+    build:
+      context: ./hello-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8080"
+    environment:
+      KAFKA_ADDRESS: kafka:29092
+      KAFKA_TOPIC: audit-log
+      MESSAGE_SERVICE_URL: http://message-service:8080
+    depends_on:
+      - kafka
+      - message-service
+    restart: unless-stopped
+
+  audit-service:
+    build:
+      context: ./audit-service
+      dockerfile: Dockerfile
+    environment:
+      KAFKA_ADDRESS: kafka:29092
+      KAFKA_TOPIC: audit-log
+    depends_on:
+      - kafka
+    restart: unless-stopped
+
+
+

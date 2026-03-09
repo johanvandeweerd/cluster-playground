@@ -1,0 +1,26 @@
+name: Build and push hello-service to ghcr.io
+
+on:
+  push:
+    branches: [ "observability" ]
+    paths:
+      - 'images/hello-service/**'
+      - '.github/workflows/hello-service.yaml'
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push hello-servoce to ghcr.io
+        uses: ./.github/actions/build-service
+        with:
+          name: hello-service
+          directory: images/hello-service

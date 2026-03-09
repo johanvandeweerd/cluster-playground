@@ -1,0 +1,26 @@
+name: Build and push audit-service to ghcr.io
+
+on:
+  push:
+    branches: [ "observability" ]
+    paths:
+      - 'images/audit-service/**'
+      - '.github/workflows/audit-service.yaml'
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push audit-servoce to ghcr.io
+        uses: ./.github/actions/build-service
+        with:
+          name: audit-service
+          directory: images/audit-service
